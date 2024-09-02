@@ -1,4 +1,4 @@
-const io = require("socket.io")(3000, {
+const io = require("socket.io")(4000, {
   cors: {
     origin: "*", // Allow all origins for CORS
   },
@@ -17,13 +17,13 @@ io.on("connection", (socket) => {
     if (available.length > 1) {
       while ((!pair || pair === socket.id) && available.length > 1) {
         let index = Math.floor(Math.random() * available.length);
-        pair = available[index]; 
+        pair = available[index];
       }
 
       if (pair) {
         available = available.filter(id => id !== pair && id !== socket.id);
 
-        console.log("found");
+        // Notify both users that they have been paired
         io.to(pair).emit("found", socket.id, pair);
         io.to(socket.id).emit("found", pair, socket.id);
         
