@@ -17,13 +17,13 @@ io.on("connection", (socket) => {
     if (available.length > 1) {
       while ((!pair || pair === socket.id) && available.length > 1) {
         let index = Math.floor(Math.random() * available.length);
-        pair = available[index];
+        pair = available[index]; 
       }
 
       if (pair) {
         available = available.filter(id => id !== pair && id !== socket.id);
 
-        // Notify both users that they have been paired
+        console.log("found");
         io.to(pair).emit("found", socket.id, pair);
         io.to(socket.id).emit("found", pair, socket.id);
         
