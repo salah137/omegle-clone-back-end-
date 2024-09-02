@@ -15,8 +15,6 @@ const cors = require('cors');
 
 let available = [];
 
-
-
 io.on("connection", (socket) => {
   io.to(socket.id).emit("get-id",socket.id)
   socket.on("search", () => {
