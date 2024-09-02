@@ -1,10 +1,21 @@
-const io = require("socket.io")(4000, {
+const express = require('express');
+const cors = require('cors');
+const app = express();
+app.use(cors());
+const server = require('http').createServer(app);
+
+const io = require("socket.io")(server, {
   cors: {
-    origin: "*", // Allow all origins for CORS
+    origin: "*",
+    methods: ["GET", "POST"]
+    // Allow all origins for CORS
   },
 });
+const cors = require('cors');
 
 let available = [];
+
+
 
 io.on("connection", (socket) => {
   io.to(socket.id).emit("get-id",socket.id)
