@@ -11,7 +11,6 @@ const io = require("socket.io")(server, {
     // Allow all origins for CORS
   },
 });
-const cors = require('cors');
 
 let available = [];
 
