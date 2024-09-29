@@ -1,7 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-app.use(cors());
+app.use(cors( {
+  origin: "*", // Specify your frontend domain
+  methods: "*",  // Allowed methods
+  credentials: false,  // If you need to send cookies or other credentials
+}
+));
+app.options('*', cors());  // Allow preflight requests for all routes
 
 const server = require('http').createServer(app);
 const io = require("socket.io")(server, {
@@ -11,7 +17,6 @@ const io = require("socket.io")(server, {
   },
 });
 
-app.options('*', cors());  // Allow preflight requests for all routes
 
 
 let available = [];
