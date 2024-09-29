@@ -11,6 +11,9 @@ const io = require("socket.io")(server, {
   },
 });
 
+app.options('*', cors());  // Allow preflight requests for all routes
+
+
 let available = [];
 
 io.on("connection", (socket) => {
