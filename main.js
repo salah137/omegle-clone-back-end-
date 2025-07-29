@@ -1,7 +1,9 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
+const http = require("http");
+
 const app = express();
-const server = require('http').createServer(app);
+const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
     origin: "*",
@@ -9,57 +11,66 @@ const io = require("socket.io")(server, {
   },
 });
 
-
+app.use(cors());
 
 let available = [];
+const peerMap = new Map(); // Map socket.id => peerId
 
 io.on("connection", (socket) => {
-  io.to(socket.id).emit("get-id", socket.id);
+  console.log(`Socket connected: ${socket.id}`);
+
+  socket.on("register-id", (peerId) => {
+    peerMap.set(socket.id, peerId);
+    console.log("hhhh");
+    
+  });
 
   socket.on("search", () => {
     available.push(socket.id);
-    console.log(`Socket connected: ${socket.id}`);
-
+    console.log(`Searching: ${socket.id}`);
+    console.log(available);
+    
     let pair = null;
-
+    
     if (available.length > 1) {
       while ((!pair || pair === socket.id) && available.length > 1) {
-        let index = Math.floor(Math.random() * available.length);
-        pair = available[index];
+        const idx = Math.floor(Math.random() * available.length);
+        console.log(idx);
+        
+        pair = available[idx];
       }
 
       if (pair) {
-        available = available.filter(id => id !== pair && id !== socket.id);
+        
+        available = available.filter((id) => id !== pair && id !== socket.id);
+        
+        const myPeerId = peerMap.get(socket.id);
+        const otherPeerId = peerMap.get(pair);
+        
+        console.log(myPeerId,otherPeerId);
+        
 
-        // Notify both users that they have been paired
-        io.to(pair).emit("found", socket.id, pair);
-        io.to(socket.id).emit("found", pair, socket.id);
+        if (myPeerId && otherPeerId) {
+          console.log("found",myPeerId,otherPeerId);
+          
+          io.to(socket.id).emit("found", otherPeerId);
+          io.to(pair).emit("found", myPeerId);
+        }
       }
     }
   });
 
-  socket.on("cancel", (id) => {
-    io.to(id).emit("break");
+  socket.on("cancel", (targetSocketId) => {
+    io.to(targetSocketId).emit("break");
   });
 
-  // Remove socket from available when disconnected
   socket.on("disconnect", () => {
-    available = available.filter(id => id !== socket.id);
     console.log(`Socket disconnected: ${socket.id}`);
+    available = available.filter((id) => id !== socket.id);
+    peerMap.delete(socket.id);
   });
 });
 
-app.use(cors( {
-  origin: "*", // Specify your frontend domain
-  methods: "*",  // Allowed methods
-  credentials: false,  // If you need to send cookies or other credentials
-}
-));
-app.options('*', cors());  // Allow preflight requests for all routes
-
-
-
-// Bind the server to a port
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
